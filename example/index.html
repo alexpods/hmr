@@ -1,0 +1,15 @@
+<html>
+    <head>
+        <title>Hot Module Replacement - example</title>
+        <script src="https://jspm.io/system@0.18.17.js"></script>
+        <script src="config.js"></script>
+        <script>
+            System.import('./hmr/index.js').then(function(m) {
+                window.hmr      = m;
+                window.reloader = m.boot();
+
+                return System.import('./scripts/index.js');
+            });
+        </script>
+    </head>
+</html>

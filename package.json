@@ -1,0 +1,18 @@
+{
+  "name": "hmr",
+  "version": "0.0.0",
+  "description": "Hot Module Replacement for WHATWG Loader",
+  "license": "MIT",
+  "author": "Aleksey Podskrebyshev <alexpods>",
+  "repository": "https://github.com/alexpods/hmr",
+  "scripts": {
+    "build": "gulp build",
+    "watch": "gulp watch",
+    "example": "http-server ./example"
+  },
+  "devDependencies": {
+    "gulp": "^3.9.0",
+    "gulp-babel": "^5.2.1",
+    "http-server": "^0.8.0"
+  }
+}
