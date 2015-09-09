@@ -29,7 +29,7 @@ export class Replacer {
       this._isHooked = true;
     }
 
-    this._subscription = watcher.subscribe((moduleName, content) => {
+    this._subscription = watcher.subscribe((type, moduleName, content) => {
       this._setContent(moduleName, content);
 
       var reloadingModuleNames = [moduleName].concat(Object.keys(this._dependants[moduleName] || {}));
