@@ -1,32 +1,19 @@
 import { spy } from 'sinon';
 import { forEach } from 'lodash';
-import { EventEmitter } from 'events';
 import { expect } from 'chai';
-import { WatchRemotelyWatcher } from '../../src/Watchers/WatchRemotelyWatcher';
+import { WatchRemotelyWatcher } from '../../../src/Watchers/WatchRemotelyWatcher';
 
-function createFakeWebSocket(url, isConnecting = true) {
-  const webSocket = new EventEmitter();
-  webSocket.addEventListener = spy(webSocket, 'on');
-  webSocket.removeEventListener = spy(webSocket, 'removeListener');
-  webSocket.postMessage = spy();
-  webSocket.url = url || 'ws://localhost/path';
-  webSocket.readyState = isConnecting ? 0 : 1;
-  return webSocket;
-}
-
-function createFakeWebSocketMessage(data) {
+function createMockWebSocketMessage(data) {
   return { data: JSON.stringify(data) };
 }
-
-global.WebSocket = createFakeWebSocket;
 
 describe('WatchRemotelyWatcher', () => {
   describe('initializing', () => {
     it('should be initialized with WebSocket object', () => {
-      const fakeWebSocket = createFakeWebSocket();
-      const watcher = new WatchRemotelyWatcher({ webSocket: fakeWebSocket });
+      const mockWebSocket = new global.WebSocket();
+      const watcher = new WatchRemotelyWatcher({ webSocket: mockWebSocket });
 
-      expect(watcher.webSocket).to.equal(fakeWebSocket);
+      expect(watcher.webSocket).to.equal(mockWebSocket);
     });
 
     it('should create new WebSocket base on specified url', () => {
@@ -45,14 +32,14 @@ describe('WatchRemotelyWatcher', () => {
     });
 
     it('should begin trying to reconnect on closing web socket connection', (done) => {
-      const fakeWebSocket = createFakeWebSocket();
-      const watcher = new WatchRemotelyWatcher({ webSocket: fakeWebSocket, reconnectionInterval: 1 });
+      const mockWebSocket = new global.WebSocket();
+      const watcher = new WatchRemotelyWatcher({ webSocket: mockWebSocket, reconnectionInterval: 1 });
 
-      fakeWebSocket.readyState = 3;
-      fakeWebSocket.emit('close');
+      mockWebSocket.readyState = 3;
+      mockWebSocket.emit('close');
 
       setTimeout(() => {
-        expect(watcher.webSocket).to.not.equal(fakeWebSocket);
+        expect(watcher.webSocket).to.not.equal(mockWebSocket);
         expect(watcher.webSocket.readyState).to.equal(0);
         done();
       }, 2);
@@ -69,11 +56,11 @@ describe('WatchRemotelyWatcher', () => {
     let watcher;
     let observers;
     let unsubscribes;
-    let fakeWebSocket;
+    let mockWebSocket;
 
     beforeEach(() => {
-      fakeWebSocket = createFakeWebSocket();
-      watcher = new WatchRemotelyWatcher({ webSocket: fakeWebSocket });
+      mockWebSocket = new global.WebSocket();
+      watcher = new WatchRemotelyWatcher({ webSocket: mockWebSocket });
 
       observers    = [];
       unsubscribes = [];
@@ -86,7 +73,7 @@ describe('WatchRemotelyWatcher', () => {
     it('should notify observers on error in web socket', () => {
       const error = new Error('some error');
 
-      fakeWebSocket.emit('error', error);
+      mockWebSocket.emit('error', error);
 
       forEach(observers, (observer) => {
         expect(observer.next.notCalled).to.equal(true);
@@ -99,9 +86,9 @@ describe('WatchRemotelyWatcher', () => {
       it(`should emit "${type}" event on file system event "${event}"`, () => {
         const path    = 'some/path';
         const content = ' some very long content ';
-        const message = createFakeWebSocketMessage({ event, path, content });
+        const message = createMockWebSocketMessage({ event, path, content });
 
-        fakeWebSocket.emit('message', message);
+        mockWebSocket.emit('message', message);
 
         forEach(observers, (observer) => {
           expect(observer.next.calledWithMatch({ type, module: path, content })).to.equal(true);
@@ -114,9 +101,9 @@ describe('WatchRemotelyWatcher', () => {
     forEach(['addDir', 'unlinkDir'], (event) => {
       it(`should not emit any event on file system event "${event}"`, () => {
         const path = 'some/path';
-        const message = createFakeWebSocketMessage({ event, path });
+        const message = createMockWebSocketMessage({ event, path });
 
-        fakeWebSocket.emit('message', message);
+        mockWebSocket.emit('message', message);
 
         forEach(observers, (observer) => {
           expect(observer.next.notCalled).to.equal(true);

@@ -1,15 +1,21 @@
-import { Replacer } from './Replacer';
-import { SimpleWatcher } from './SimpleWatcher';
-import { HmrServerWatcher } from './HmrServerWatcher';
-import { SystemJSLoaderAdapter } from './SystemJSLoaderAdapter';
-
+import { ModuleReplacer } from './ModuleReplacer.js';
+import { WatchRemotelyWatcher } from './Watchers/WatchRemotelyWatcher.js';
+import { SystemJsLoaderAdapter } from './LoaderAdapters/SystemJsLoaderAdapter.js';
+import { timersRefresher } from './refreshers/timers.js';
+import { domRefresher } from './refreshers/dom.js';
 
 export function boot() {
-  const loader    = new SystemJSLoaderAdapter(window.System);
-  const watcher   = new HmrServerWatcher('ws://localhost:4020/hmr', '/scripts');
-  const replacer  = new Replacer({ loader, watcher });
+  const watcher = new WatchRemotelyWatcher();
+  const global = window;
+  const System = global.System;
+  const refreshers = [
+    timersRefresher,
+    domRefresher,
+  ];
+  const loaderAdapter = new SystemJsLoaderAdapter({ System, global });
+  const replacer = new ModuleReplacer({ loaderAdapter, watcher, global, refreshers });
 
   replacer.run();
 
-  return replacer;
+  window.hmr = replacer;
 }

@@ -10,7 +10,7 @@ export class SimpleWatcher {
 
   static get DEFAULT_LOGGER() {
     /* eslint-disable no-console */
-    return console.log;
+    return message => console.log(message);
     /* eslint-enable no-console */
   }
 

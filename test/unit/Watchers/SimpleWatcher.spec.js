@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { spy } from 'sinon';
-import { SimpleWatcher } from '../../src/Watchers/SimpleWatcher';
+import { SimpleWatcher } from '../../../src/Watchers/SimpleWatcher';
 
 Object.defineProperty(SimpleWatcher, 'DEFAULT_LOGGER',  { value: false });
 

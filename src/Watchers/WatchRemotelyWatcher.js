@@ -1,4 +1,4 @@
-import { SimpleWatcher } from './SimpleWatcher';
+import { SimpleWatcher } from './SimpleWatcher.js';
 
 const EVENT_TYPE_MAP = {
   add: 'create',
@@ -123,7 +123,7 @@ export class WatchRemotelyWatcher extends SimpleWatcher {
   }
 
   _onWebSocketOpen() {
-    this.log(`Stat listen to file system changes on ${this._webSocket.url}`);
+    this.log(`Start listen to file system changes on ${this._webSocket.url}`);
   }
 
   _onWebSocketClose() {

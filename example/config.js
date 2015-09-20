@@ -1,5 +1,9 @@
 System.config({
-  baseURL:      "/",
-  transpiler:   "babel",
-  defaultJSExtensions: true
+  baseURL: "/",
+  transpiler: 'babel',
+
+  map: {
+    css: '/plugin-css.js',
+    babel: '/babel.js',
+  },
 });

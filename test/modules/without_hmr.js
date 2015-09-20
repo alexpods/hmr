@@ -1,0 +1,1 @@
+exports.someProperty = 10;
