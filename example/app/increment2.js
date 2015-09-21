@@ -1,6 +1,6 @@
-let init = 1000;
-let incr = 50;
+let init = 2000;
+let incr = 1;
 
-export function increment() {
+export function increment2() {
   return init += incr;
 }

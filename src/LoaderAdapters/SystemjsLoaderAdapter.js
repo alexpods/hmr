@@ -70,21 +70,35 @@ export class SystemJsLoaderAdapter {
     const that = this;
     const System = this._System;
     const global = this._global;
+
+    const baseLoad = System.load;
+    const baseFetch = System.fetch;
+    const baseTranslate = System.translate;
+    const baseInstantiate = System.instantiate;
     const baseImport = System.import;
-    const { translate: baseTranslate, instantiate: baseInstantiate } = System;
 
-    System.import = function systemImport(...args) {
-      return Promise.resolve(that.normalize(args[0])).then((normalizedModuleName) => {
-        args[0] = normalizedModuleName;
-
+    function runInZone(moduleName, callback) {
+      return Promise.resolve(that.normalize(moduleName).then((normalizedModuleName) => {
         return global.zone
           .fork({
             [ZONE_EXECUTION_CONTEXT_FILED]: normalizedModuleName,
           })
           .run(() => {
-            return baseImport.apply(this, args);
+            return callback();
           });
-      });
+      }));
+    }
+
+    System.load = function systemLoad(...args) {
+      return runInZone(args[0], () => baseLoad.apply(this, args));
+    };
+
+    System.fetch = function systemFetch(...args) {
+      return runInZone(args[0].name, () => baseFetch.apply(this, args));
+    };
+
+    System.import = function systemImport(...args) {
+      return runInZone(args[0], () => baseImport.apply(this, args));
     };
 
     System.translate = function systemTranslate(load) {
@@ -104,6 +118,18 @@ export class SystemJsLoaderAdapter {
             that._moduleManager.addSynonyms(that.pluginFirst ? nameParts[1] : nameParts[0], name);
           }
 
+          if ('execute' in result) {
+            const baseExecute = result.execute;
+            result.execute = function execute(...args) {
+              return global.zone
+                .fork({
+                  [ZONE_EXECUTION_CONTEXT_FILED]: name,
+                })
+                .run(() => {
+                  return baseExecute.apply(result, args);
+                });
+            };
+          }
           return result;
         });
       });

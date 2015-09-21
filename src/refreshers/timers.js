@@ -10,19 +10,18 @@ export function timersRefresher(hmr) {
 
   Object.keys(timerFunctions).forEach((timerFunctionName) => {
     const baseFunction = global[timerFunctionName];
-
-    timers[timerFunctionName] = {};
+    const timersContainer = timers[timerFunctionName] = {};
 
     if (baseFunction) {
       const timerFunction = function timerFunction(...args) {
         const timer = baseFunction.apply(this, args);
         const moduleName = hmr.executionContextModule;
 
-        if (!(moduleName in timers)) {
-          timers[timerFunctionName][moduleName] = [];
+        if (!(moduleName in timersContainer)) {
+          timersContainer[moduleName] = [];
         }
 
-        timers[timerFunctionName][moduleName].push(timer);
+        timersContainer[moduleName].push(timer);
 
         return timer;
       };
@@ -35,10 +34,11 @@ export function timersRefresher(hmr) {
   return function clearTimers(moduleName) {
     Object.keys(timers).forEach((timerFunctionName) => {
       const clearFunction = timerFunctions[timerFunctionName];
+      const timersContainer = timers[timerFunctionName];
 
-      if (moduleName in timers[timerFunctionName]) {
-        timers[timerFunctionName][moduleName].forEach(timer => global[clearFunction](timer));
-        timers[timerFunctionName][moduleName] = [];
+      if (moduleName in timersContainer) {
+        timersContainer[moduleName].forEach(timer => global[clearFunction](timer));
+        timersContainer[moduleName] = [];
       }
     });
   };
