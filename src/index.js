@@ -3,6 +3,7 @@ import { WatchRemotelyWatcher } from './Watchers/WatchRemotelyWatcher.js';
 import { SystemJsLoaderAdapter } from './LoaderAdapters/SystemJsLoaderAdapter.js';
 import { timersRefresher } from './refreshers/timers.js';
 import { domRefresher } from './refreshers/dom.js';
+import { eventTargetRefresher } from './refreshers/eventTarget.js';
 
 export function boot() {
   const watcher = new WatchRemotelyWatcher();
@@ -11,6 +12,7 @@ export function boot() {
   const refreshers = [
     timersRefresher,
     domRefresher,
+    eventTargetRefresher,
   ];
   const loaderAdapter = new SystemJsLoaderAdapter({ System, global });
   const replacer = new ModuleReplacer({ loaderAdapter, watcher, global, refreshers });

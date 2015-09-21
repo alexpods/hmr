@@ -1,3 +1,20 @@
+#target {
+    display: inline-block;
+    background: yellow;
+    color: red;
+    font: bold 18px Helvetica;
+    padding: 5px 10px;
+    cursor: pointer;
+}
+
+#target:active {
+    background: orange;
+}
+
 body {
-    background: green;
+    background: blue;
+}
+
+h1 {
+    font-size: 100px;
 }
