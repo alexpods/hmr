@@ -14,3 +14,23 @@
 body {
     background: green;
 }
+
+.node-appended-child {
+    padding: 5px 10px;
+    background: orange;
+}
+
+.node-inserted-before {
+    padding: 5px 10px;
+    background: red;
+}
+
+#container1 {
+    padding: 5px 10px;
+    border: 1px solid black;
+}
+
+#container2 {
+    padding: 5px 10px;
+    border: 4px solid brown;
+}

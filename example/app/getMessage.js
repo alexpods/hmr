@@ -1,3 +1,3 @@
 export function getMessage() {
-  return 'My new old friend!!!'
+  return 'My new old friend223332!!!'
 }

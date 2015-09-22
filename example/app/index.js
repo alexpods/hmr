@@ -2,14 +2,17 @@ import { content } from './text.js';
 import { increment } from './increment.js';
 import { increment2 } from './increment2.js';
 import { getMessage } from './getMessage.js';
+import { testAppendChild } from './node/appendChild.js';
 import './styles.css!css';
 
 console.log('reload');
 
 const target = document.querySelector('#target');
-const container = document.querySelector('#container');
+const container1 = document.querySelector('#container1');
+const container2 = document.querySelector('#container2');
+const element = document.querySelector('#element');
 
-container.innerHTML = content;
+container1.innerHTML = content;
 
 
 /* Timers */
@@ -18,7 +21,21 @@ container.innerHTML = content;
 //setInterval(() => console.log(increment2()), 3000);
 
 
-/* Event Target */
+/* EventTarget.prototype.addEventListener */
 
-target.addEventListener('click', () => console.log(getMessage()), false);
+target.addEventListener('click', () => console.log(getMessage() + 'here'), false);
 
+/* Node.prototype.appendChild */
+
+const span1 = testAppendChild(container2);
+
+/* Node.prototype.insertBefore - insert node without parent */
+
+const span2 = document.createElement('span');
+span2.classList.add('node-inserted-before');
+span2.textContent = 'inserted before2';
+container2.insertBefore(span2, span1);
+
+/* Node.prototype.insertBefore - insert node which already exists in document */
+
+container2.insertBefore(element, span2);

@@ -2,7 +2,7 @@ import { ModuleReplacer } from './ModuleReplacer.js';
 import { WatchRemotelyWatcher } from './Watchers/WatchRemotelyWatcher.js';
 import { SystemJsLoaderAdapter } from './LoaderAdapters/SystemJsLoaderAdapter.js';
 import { timersRefresher } from './refreshers/timers.js';
-import { domRefresher } from './refreshers/dom.js';
+import { createNodeRefresher } from './refreshers/node.js';
 import { eventTargetRefresher } from './refreshers/eventTarget.js';
 
 export function boot() {
@@ -11,7 +11,7 @@ export function boot() {
   const System = global.System;
   const refreshers = [
     timersRefresher,
-    domRefresher,
+    createNodeRefresher,
     eventTargetRefresher,
   ];
   const loaderAdapter = new SystemJsLoaderAdapter({ System, global });
