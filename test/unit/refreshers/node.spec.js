@@ -8,7 +8,7 @@ chai.use(dirtyChai);
 const global = jsdom().defaultView;
 const { document, Node } = global;
 
-describe('createNodeRefresher', () => {
+xdescribe('createNodeRefresher', () => {
   let refresh;
   let hmr;
 

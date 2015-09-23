@@ -56,7 +56,7 @@ function createInsertBeforeRefresher(hmr, Node) {
 
   return function refreshInsertBefore(moduleName) {
     if (moduleName in insertedBefore) {
-      insertedBefore[moduleName].forEach(([newChild) => {
+      insertedBefore[moduleName].forEach((newChild) => {
         if (newChild.parentNode) {
           newChild.parentNode.removeChild(newChild);
         }

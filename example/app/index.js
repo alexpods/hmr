@@ -3,6 +3,7 @@ import { increment } from './increment.js';
 import { increment2 } from './increment2.js';
 import { getMessage } from './getMessage.js';
 import { testAppendChild } from './node/appendChild.js';
+import { testDOMTokenList } from './refreshers/DOMTokenList';
 import './styles.css!css';
 
 console.log('reload');
@@ -39,3 +40,5 @@ container2.insertBefore(span2, span1);
 /* Node.prototype.insertBefore - insert node which already exists in document */
 
 container2.insertBefore(element, span2);
+
+testDOMTokenList(window.elementDOMTokenList);
