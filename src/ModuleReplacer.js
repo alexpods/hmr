@@ -1,3 +1,5 @@
+const unhooked = new Map();
+
 export class ModuleReplacer {
 
   constructor({ loaderAdapter, watcher, global: _global, refreshers = [] }) {
@@ -58,6 +60,48 @@ export class ModuleReplacer {
       this._unsubscribeWatcher();
       this._unsubscribeWatcher = null;
     }
+  }
+
+  refresherHook(object, methodName, { hook, refresh }) {
+    const hmr = this;
+    const unhookedMethod = object[methodName];
+    const container  = {};
+
+    if (!unhooked.has(object)) {
+      unhooked.set(object, {});
+    }
+
+    const unhookedMethods = unhooked.get(object);
+
+    if (!(methodName in unhookedMethods)) {
+      unhookedMethods[methodName] = object[methodName];
+    }
+
+    function hookedMethod(...args) {
+      const moduleName = hmr.executionContextModule;
+
+      if (moduleName) {
+        if (!(moduleName in container)) {
+          container[moduleName] = new Array();
+        }
+        hook(container[moduleName], this, args);
+      }
+      return unhookedMethod.apply(this, args);
+    }
+
+    object[methodName] = hookedMethod;
+
+    return function refresher(moduleName) {
+      if (moduleName in container) {
+        refresh(container[moduleName]);
+        delete container[moduleName];
+      }
+    };
+  }
+
+  getUnhooked(object, methodName) {
+    const unhookedMethods = unhooked.get(object);
+    return (unhookedMethods && (methodName in unhookedMethods)) ? unhookedMethods[methodName] : object[methodName];
   }
 
   _getHmrModules(normalizedModuleName, event) {

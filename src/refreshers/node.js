@@ -1,69 +1,91 @@
-function createAppendChildRefresher(hmr, Node) {
-  const appended = {};
-  const baseAppendChild = Node.prototype.appendChild;
+function createTextContentRefresher(hmr, Node) {
+  const textContents = {};
+  const descriptor = Object.getOwnPropertyDescriptor(Node.prototype, 'textContent');
 
-  Node.prototype.appendChild = function appendChild(...args) {
-    const moduleName = hmr.executionContextModule;
+  Object.defineProperty(Node.prototype, 'textContent', Object.assign({}, descriptor, {
+    ['set'](textContent) {
+      const node = this;
+      const moduleName  = hmr.executionContextModule;
 
-    if (!(moduleName in appended)) {
-      appended[moduleName] = [];
+      let moduleTextContents = textContents[moduleName];
+
+      if (!moduleTextContents) {
+        moduleTextContents = textContents[moduleName] = new Map();
+      }
+
+      if (!moduleTextContents.has(node)) {
+        moduleTextContents.set(node, descriptor.get.call(this));
+      }
+
+      return descriptor.set.call(node, textContent);
+    },
+  }));
+
+  return function refreshTextContent(moduleName) {
+    if (moduleName in textContents) {
+      textContents[moduleName].forEach((previousContent, node) => {
+        descriptor.set.call(node, previousContent);
+      });
+      delete textContents[moduleName];
     }
-    const child = args[0];
-
-    if (child.nodeName === 'LINK') {
-      const href = child.getAttribute('href');
-      const separator = href.indexOf('?') === -1 ? '?' : '&';
-      child.setAttribute('href', href + separator + Date.now());
-    }
-
-    appended[moduleName].push(child);
-
-    return baseAppendChild.apply(this, args);
   };
+}
 
-  return function refreshAppendChild(moduleName) {
-    if (moduleName in appended) {
-      appended[moduleName].forEach((childNode) => {
+function createAppendChildRefresher(hmr, Node) {
+  return hmr.refresherHook(Node.prototype, 'appendChild', {
+    hook(container, parent, args) {
+      const child = args[0];
+
+      if (child.nodeName === 'LINK') {
+        const href = child.getAttribute('href');
+        const separator = href.indexOf('?') === -1 ? '?' : '&';
+        child.setAttribute('href', href + separator + Date.now());
+      }
+
+      container.push(child);
+    },
+    refresh(container) {
+      container.forEach((childNode) => {
         const parentNode = childNode.parentNode;
 
         if (parentNode) {
           parentNode.removeChild(childNode);
         }
       });
-      appended[moduleName] = [];
-    }
-  };
+    },
+  });
 }
 
 
 function createInsertBeforeRefresher(hmr, Node) {
-  const insertedBefore = {};
-  const baseInsertBefore = Node.prototype.insertBefore;
+  const insertBefore = hmr.getUnhooked(Node.prototype, 'insertBefore');
 
-  Node.prototype.insertBefore = function insertBefore(newChild, refChild) {
-    const moduleName = hmr.executionContextModule;
+  return hmr.refresherHook(Node.prototype, 'insertBefore', {
+    hook(container, parent, args) {
+      const newChild = args[0];
 
-    if (moduleName) {
-      if (!(moduleName in insertedBefore)) {
-        insertedBefore[moduleName] = [];
-      }
-
-      insertedBefore[moduleName].push([newChild, newChild.parentNode]);
-    }
-
-    return baseInsertBefore.call(this, newChild, refChild);
-  };
-
-  return function refreshInsertBefore(moduleName) {
-    if (moduleName in insertedBefore) {
-      insertedBefore[moduleName].forEach(([newChild) => {
-        if (newChild.parentNode) {
-          newChild.parentNode.removeChild(newChild);
+      container.push([parent, newChild, newChild.parentNode, newChild.nextSibling]);
+    },
+    refresh(container) {
+      container.reverse().forEach(([parent, newChild, newChildParentNode, newChildNextSibling]) => {
+        if (!newChildParentNode) {
+          if (newChild.parentNode === parent) {
+            parent.removeChild(newChild);
+          }
+        } else {
+          insertBefore.call(newChildParentNode, newChild, newChildNextSibling);
         }
       });
-      delete insertedBefore[moduleName];
-    }
-  };
+    },
+  });
+}
+
+
+function createReplaceChildRefresher(hmr, Node) {
+  return hmr.refresherHook(Node.prototype, 'replaceChild', {
+    hook() {},
+    refresh() {},
+  });
 }
 
 
@@ -73,6 +95,8 @@ export function createNodeRefresher(hmr) {
   const refreshers = [
     createAppendChildRefresher(hmr, Node),
     createInsertBeforeRefresher(hmr, Node),
+    createTextContentRefresher(hmr, Node),
+    createReplaceChildRefresher(hmr, Node),
   ];
 
   return function refreshNode(moduleName) {

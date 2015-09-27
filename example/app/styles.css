@@ -34,3 +34,14 @@ body {
     padding: 5px 10px;
     border: 4px solid brown;
 }
+
+#container3 {
+    padding: 10px;
+    border: 10px solid purple;
+}
+#element {
+    display: inline-block;
+    background: yellow;
+    padding: 10px;
+    vertical-align: middle;
+}
